@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package admin;
+
+option go_package = "./pkg/admin/pb";
+
+// Service definition
+service AdminService {
+    rpc SignupAdmin(SignupAdminRequest) returns (SignupAdminResponse);
+    rpc LoginAdmin(LoginAdminRequest) returns (LoginAdminResponse);
+    rpc Validate(ValidateRequest) returns (ValidateResponse); // Added Validate RPC
+}
+
+// Message for SignupAdminRequest
+message SignupAdminRequest {
+    string email = 1;    // Admin email
+    string password = 2; // Admin password
+}
+
+// Message for SignupAdminResponse
+message SignupAdminResponse {
+    string admin_id = 1; // Unique ID for the admin
+    int64 status = 2;  // Success or failure message
+    string error =3;  // error 
+} 
+
+// Message for LoginAdminRequest
+message LoginAdminRequest {
+    string email = 1;    // Admin email
+    string password = 2; // Admin password
+}
+
+// Message for LoginAdminResponse
+message LoginAdminResponse {
+    string token = 1;    // Authentication token (e.g., JWT)
+    string message = 2; // Success or failure message
+    int64 status = 3;
+}
+
+// Message for ValidateRequest
+message ValidateRequest {
+    string token = 1; // Token to be validated
+}
+
+// Message for ValidateResponse
+message ValidateResponse {
+    bool is_valid = 1;    // Indicates if the token is valid
+    string message = 2;   // Success or error message
+    int64 adminId = 3;
+    int64 status = 4;
+}
