@@ -82,3 +82,37 @@ func (s *Server) LoginAdmin(ctx context.Context, req *pb.LoginAdminRequest) (*pb
 		Token:  token,
 	}, nil
 }
+
+func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.ValidateResponse, error) {
+	// Validate the token and retrieve claims
+	claims, err := s.Jwt.ValidateToken(req.Token)
+	if err != nil {
+		return &pb.ValidateResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		}, nil
+	}
+
+	// Retrieve the user from the database
+	var admin models.User
+	if result := s.H.DB.Where(&models.User{Email: claims.Email}).First(&admin); result.Error != nil {
+		return &pb.ValidateResponse{
+			Status:  http.StatusNotFound,
+			Message: "Admin not found",
+		}, nil
+	}
+
+	// Additional check: Verify the admin's status or role
+	if !admin.Isadmin {
+		return &pb.ValidateResponse{
+			Status:  http.StatusForbidden,
+			Message: "Admin access revoked or inactive",
+		}, nil
+	}
+
+	// Return success with admin's details
+	return &pb.ValidateResponse{
+		Status:  http.StatusOK,
+		AdminId: admin.Id, // or AdminId if that is the naming convention
+	}, nil
+}

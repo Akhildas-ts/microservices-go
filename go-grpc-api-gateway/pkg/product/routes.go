@@ -1,14 +1,14 @@
 package product
 
 import (
-	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/auth"
+	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/admin"
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/config"
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/product/routes"
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(r *gin.Engine, c *config.Config, authSvc *auth.ServiceClient) {
-	a := auth.InitAuthMiddleware(authSvc)
+func RegisterRoutes(r *gin.Engine, c *config.Config, adminSvc *admin.ServiceClient) {
+	a := admin.InitAdminAuthMiddleware(adminSvc)
 
 	svc := &ServiceClient{
 		Client: InitServiceClient(c),
