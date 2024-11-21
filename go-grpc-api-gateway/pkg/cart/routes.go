@@ -1,12 +1,13 @@
 package cart
 
 import (
+	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/auth"
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/cart/routes"
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/config"
 	"github.com/gin-gonic/gin"
 )
 
-func CartRoutes(r *gin.Engine, c *config.Config) *ServiceClient {
+func CartRoutes(r *gin.Engine, c *config.Config, auth *auth.ServiceClient) *ServiceClient {
 	svc := &ServiceClient{Client: InitServiceClient(c)}
 
 	routes := r.Group("/cart")

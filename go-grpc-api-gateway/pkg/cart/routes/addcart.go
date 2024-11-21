@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/cart/pb"
@@ -29,6 +30,8 @@ func AddToCart(ctx *gin.Context, c pb.CartClient) {
 	})
 
 	if err != nil {
+
+		fmt.Println("Error from connection of grpc .. ")
 		ctx.AbortWithError(http.StatusBadGateway, err)
 		return
 	}

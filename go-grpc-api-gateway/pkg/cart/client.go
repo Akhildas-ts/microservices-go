@@ -13,7 +13,7 @@ type ServiceClient struct {
 }
 
 func InitServiceClient(c *config.Config) pb.CartClient {
-	cc, err := grpc.Dial(c.AuthSvcUrl, grpc.WithInsecure())
+	cc, err := grpc.Dial(c.CartSvcUrl, grpc.WithInsecure())
 
 	if err != nil {
 		fmt.Println("Count not connect ", err)

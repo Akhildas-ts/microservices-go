@@ -5,6 +5,7 @@ import (
 
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/admin"
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/auth"
+	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/cart"
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/config"
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/order"
 	"github.com/Akhildas_ts/go-grpc-api-gateway/pkg/product"
@@ -24,6 +25,7 @@ func main() {
 	adminSvc := *admin.RegisterRoutes(r, &c)
 	product.RegisterRoutes(r, &c, &adminSvc)
 	order.RegisterRoutes(r, &c, &authSvc)
+	cart.CartRoutes(r, &c, &authSvc)
 
 	r.Run(c.Port)
 }

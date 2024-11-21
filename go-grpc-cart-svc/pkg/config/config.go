@@ -4,14 +4,11 @@ import "github.com/spf13/viper"
 
 type Config struct {
 	Port          string `mapstructure:"PORT"`
-	AuthSvcUrl    string `mapstructure:"AUTH_SVC_URL"`
+	DBUrl         string `mapstructure:"DB_URL"`
 	ProductSvcUrl string `mapstructure:"PRODUCT_SVC_URL"`
-	OrderSvcUrl   string `mapstructure:"ORDER_SVC_URL"`
-	AdminSvcUrl   string `mapstructure:"ADMIN_SVC_URL"`
-	CartSvcUrl    string `mapstructure:"CART_SVC_URL"`
 }
 
-func LoadConfig() (c Config, err error) {
+func LoadConfig() (config Config, err error) {
 	viper.AddConfigPath("./pkg/config/envs")
 	viper.SetConfigName("dev")
 	viper.SetConfigType("env")
@@ -24,7 +21,7 @@ func LoadConfig() (c Config, err error) {
 		return
 	}
 
-	err = viper.Unmarshal(&c)
+	err = viper.Unmarshal(&config)
 
 	return
 }
