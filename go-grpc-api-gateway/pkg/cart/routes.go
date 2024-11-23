@@ -25,5 +25,5 @@ func (svc *ServiceClient) AddCart(ctx *gin.Context) {
 }
 
 func (svc *ServiceClient) GetCart(ctx *gin.Context) {
-	routes.GetCart(ctx, svc.Client)
+	routes.GetAllItemsFromCart(ctx, svc.Client)
 }

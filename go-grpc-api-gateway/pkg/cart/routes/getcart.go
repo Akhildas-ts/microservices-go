@@ -12,7 +12,7 @@ type GetCartRequest struct {
 	Userid int64 `json:"user_id"`
 }
 
-func GetCart(ctx *gin.Context, c pb.CartClient) {
+func GetAllItemsFromCart(ctx *gin.Context, c pb.CartClient) {
 	b := GetCartRequest{}
 
 	if err := ctx.BindJSON(&b); err != nil {
@@ -20,7 +20,7 @@ func GetCart(ctx *gin.Context, c pb.CartClient) {
 		return
 	}
 
-	res, err := c.GetCart(context.Background(), &pb.GetCartRequest{
+	res, err := c.GetAllItemsFromCart(context.Background(), &pb.GetAllItemsFromCartRequest{
 		UserID: b.Userid,
 	})
 	if err != nil {
