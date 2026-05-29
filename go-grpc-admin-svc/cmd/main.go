@@ -11,6 +11,8 @@ import (
 	"github.com/Akhildas-ts/go-grpc-admin-svc/pkg/services"
 	"github.com/Akhildas-ts/go-grpc-admin-svc/pkg/utils"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func main() {
@@ -48,6 +50,8 @@ func main() {
 
 	// Create new gRPC server instance
 	grpcServer := grpc.NewServer()
+
+	healthpb.RegisterHealthServer(grpcServer, health.NewServer())
 
 	// Register the AuthService server
 	pb.RegisterAdminServiceServer(grpcServer, &s)

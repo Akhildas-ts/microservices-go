@@ -1,0 +1,203 @@
+networks:
+  ecom-net:
+    driver: bridge
+
+volumes:
+  pgdata-auth:
+  pgdata-product:
+  pgdata-order:
+  pgdata-admin:
+  pgdata-cart:
+
+services:
+
+  # ---------------- AUTH ----------------
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: ecom-postgres-auth
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: e_auth_svc
+    volumes:
+      - pgdata-auth:/var/lib/postgresql/data
+    networks: [ecom-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d e_auth_svc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  auth-svc:
+    build: { context: ./go-grpc-auth-svc }
+    image: ecom/auth-svc:dev
+    container_name: ecom-auth-svc
+    restart: unless-stopped
+    environment:
+      PORT: ":50051"
+      DB_URL: "postgres://${PG_USER}:${PG_PASSWORD}@postgres-auth:5432/e_auth_svc?sslmode=disable"
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    networks: [ecom-net]
+
+  # ---------------- PRODUCT ----------------
+  postgres-product:
+    image: postgres:16-alpine
+    container_name: ecom-postgres-product
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: e_product_svc
+    volumes:
+      - pgdata-product:/var/lib/postgresql/data
+    networks: [ecom-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d e_product_svc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  product-svc:
+    build: { context: ./go-grpc-product-svc }
+    image: ecom/product-svc:dev
+    container_name: ecom-product-svc
+    restart: unless-stopped
+    environment:
+      PORT: ":50051"
+      DB_URL: "postgres://${PG_USER}:${PG_PASSWORD}@postgres-product:5432/e_product_svc?sslmode=disable"
+    depends_on:
+      postgres-product:
+        condition: service_healthy
+    networks: [ecom-net]
+
+  # ---------------- ORDER ----------------
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: ecom-postgres-order
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: e_order_svc
+    volumes:
+      - pgdata-order:/var/lib/postgresql/data
+    networks: [ecom-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d e_order_svc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  order-svc:
+    build: { context: ./go-grpc-order-svc }
+    image: ecom/order-svc:dev
+    container_name: ecom-order-svc
+    restart: unless-stopped
+    environment:
+      PORT: ":50051"
+      DB_URL: "postgres://${PG_USER}:${PG_PASSWORD}@postgres-order:5432/e_order_svc?sslmode=disable"
+      PRODUCT_SVC_URL: "product-svc:50051"
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+    networks: [ecom-net]
+
+  # ---------------- ADMIN ----------------
+  postgres-admin:
+    image: postgres:16-alpine
+    container_name: ecom-postgres-admin
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: e_admin_svc
+    volumes:
+      - pgdata-admin:/var/lib/postgresql/data
+    networks: [ecom-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d e_admin_svc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  admin-svc:
+    build: { context: ./go-grpc-admin-svc }
+    image: ecom/admin-svc:dev
+    container_name: ecom-admin-svc
+    restart: unless-stopped
+    environment:
+      PORT: ":50051"
+      DB_URL: "postgres://${PG_USER}:${PG_PASSWORD}@postgres-admin:5432/e_admin_svc?sslmode=disable"
+    depends_on:
+      postgres-admin:
+        condition: service_healthy
+    networks: [ecom-net]
+
+  # ---------------- CART ----------------
+  postgres-cart:
+    image: postgres:16-alpine
+    container_name: ecom-postgres-cart
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: e_cart_svc
+    volumes:
+      - pgdata-cart:/var/lib/postgresql/data
+    networks: [ecom-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d e_cart_svc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  cart-svc:
+    build: { context: ./go-grpc-cart-svc }
+    image: ecom/cart-svc:dev
+    container_name: ecom-cart-svc
+    restart: unless-stopped
+    environment:
+      PORT: ":50051"
+      DB_URL: "postgres://${PG_USER}:${PG_PASSWORD}@postgres-cart:5432/e_cart_svc?sslmode=disable"
+      PRODUCT_SVC_URL: "product-svc:50051"
+    depends_on:
+      postgres-cart:
+        condition: service_healthy
+    networks: [ecom-net]
+    
+   # ---------------- API GATEWAY ----------------
+  api-gateway:
+    build: { context: ./go-grpc-api-gateway }
+    image: ecom/api-gateway:dev
+    container_name: ecom-api-gateway
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      PORT: ":3000"
+      AUTH_SVC_URL: "auth-svc:50051"
+      PRODUCT_SVC_URL: "product-svc:50051"
+      ORDER_SVC_URL: "order-svc:50051"
+      ADMIN_SVC_URL: "admin-svc:50051"
+      CART_SVC_URL: "cart-svc:50051"
+
+    depends_on:
+      auth-svc:
+        condition: service_started
+      product-svc:
+        condition: service_started
+      order-svc:
+        condition: service_started
+      admin-svc:
+        condition: service_started
+      cart-svc:
+        condition: service_started
+
+    networks:
+      - ecom-net

@@ -11,6 +11,8 @@ import (
 	"github.com/Akhildas-ts/go-grpc-cart-svc/pkg/pb"
 	service "github.com/Akhildas-ts/go-grpc-cart-svc/pkg/services"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func main() {
@@ -40,6 +42,8 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
+
+	healthpb.RegisterHealthServer(grpcServer, health.NewServer())
 
 	pb.RegisterCartServer(grpcServer, &s)
 	fmt.Println("server  runing ")
